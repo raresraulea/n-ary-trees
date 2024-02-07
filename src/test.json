@@ -1,0 +1,63 @@
+{
+    "children": [
+        {
+            "children": [
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "value": 2
+                        }
+                    ],
+                    "value": 1
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "value": 4
+                        },
+                        {
+                            "children": [],
+                            "value": 6
+                        }
+                    ],
+                    "value": 5
+                }
+            ],
+            "value": 3
+        },
+        {
+            "children": [
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "value": 8
+                        },
+                        {
+                            "children": [],
+                            "value": 10
+                        }
+                    ],
+                    "value": 9
+                },
+                {
+                    "children": [
+                        {
+                            "children": [],
+                            "value": 30
+                        },
+                        {
+                            "children": [],
+                            "value": 50
+                        }
+                    ],
+                    "value": 40
+                }
+            ],
+            "value": 20
+        }
+    ],
+    "value": 7
+}
