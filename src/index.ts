@@ -5,36 +5,41 @@ type NodeData<T> = {
 
 type ChildPromotionStrategy = 'all' | 'first';
 
+export type Nullable<T> = T | null;
+
 export class NaryTreeNode<T> {
   data: NodeData<T>;
-  parent: NaryTreeNode<T> | null;
+  parent: Nullable<NaryTreeNode<T>>;
 
-  constructor(value: T, parent: NaryTreeNode<T> | null = null) {
+  constructor(value: T, parent: Nullable<NaryTreeNode<T>> = null) {
     this.data = { value, children: [] };
     this.parent = parent;
   }
 }
 
 export class NaryTree<T> {
-  root: NaryTreeNode<T> | null;
+  root: Nullable<NaryTreeNode<T>>;
 
   constructor() {
     this.root = null;
   }
 
-  insertNode(
-    parent: NaryTreeNode<T> | null = this.root,
-    value: T
-  ): NaryTreeNode<T> {
+  insertNode(parent: Nullable<NaryTreeNode<T>>, value: T): NaryTreeNode<T> {
     const newNode = new NaryTreeNode(value, parent);
+    if (parent) {
+      const realParent = this.findNodeWithValue(parent?.data.value);
 
-    if (!parent) {
-      this.root = newNode;
-    } else {
-      parent.data.children.push(newNode);
+      if (!realParent) {
+        throw new Error('The tree does not contain this parent');
+      }
+      realParent.data.children.push(newNode);
+
+      return newNode;
     }
 
-    return newNode;
+    this.root = newNode;
+
+    return this.root;
   }
 
   updateNodeValue(node: NaryTreeNode<T>, newValue: T): void {
@@ -42,7 +47,7 @@ export class NaryTree<T> {
   }
 
   preOrderTraversal(
-    node: NaryTreeNode<T> | null = this.root,
+    node: Nullable<NaryTreeNode<T>> = this.root,
     callback: (node: NaryTreeNode<T>) => void
   ) {
     if (node) {
@@ -56,7 +61,7 @@ export class NaryTree<T> {
   // Conventie:
   // Avand in vedere numarul arbitrar de copii ai arborelui n-ar, traversarea in-order se va face prin vizitarea copiilor in afara de ultimul, aplicarea functiei de prelucrare/vizitare a nodului, iar apoi continuarea recursiva a vizitarii ultimului nod copil
   inOrderTraversal(
-    node: NaryTreeNode<T> | null = this.root,
+    node: Nullable<NaryTreeNode<T>> = this.root,
     callbackOnNodeVisit: (node: NaryTreeNode<T>) => void
   ) {
     if (node) {
@@ -79,7 +84,7 @@ export class NaryTree<T> {
   }
 
   postOrderTraversal(
-    node: NaryTreeNode<T> | null = this.root,
+    node: Nullable<NaryTreeNode<T>> = this.root,
     callback: (node: NaryTreeNode<T>) => void
   ) {
     if (node) {
@@ -107,7 +112,7 @@ export class NaryTree<T> {
 
   // Definitie:
   // Height = numarul de edges de la nod pana la cel mai adanc nod frunza al arborelui
-  calculateHeight(node: NaryTreeNode<T> | null = this.root): number {
+  calculateHeight(node: Nullable<NaryTreeNode<T>> = this.root): number {
     if (!node) return 0;
 
     let maxHeight = 0;
@@ -121,7 +126,7 @@ export class NaryTree<T> {
 
   // Definitie:
   // Depth = numarul de edges pe cel mai lung drum de la root pana la nod
-  calculateDepth(node: NaryTreeNode<T> | null): number {
+  calculateDepth(node: Nullable<NaryTreeNode<T>>): number {
     if (!node) return 0;
 
     let depth = 0;
@@ -135,7 +140,7 @@ export class NaryTree<T> {
     return depth;
   }
 
-  calculateSize(node: NaryTreeNode<T> | null = this.root): number {
+  calculateSize(node: Nullable<NaryTreeNode<T>> = this.root): number {
     if (!node) return 0;
 
     let size = 1;
@@ -245,7 +250,7 @@ export class NaryTree<T> {
 
   // Iteratori
   *preOrderIterator(
-    node: NaryTreeNode<T> | null
+    node: Nullable<NaryTreeNode<T>>
   ): Generator<NaryTreeNode<T>, void, unknown> {
     if (node) {
       yield node;
@@ -256,7 +261,7 @@ export class NaryTree<T> {
   }
 
   *inOrderIterator(
-    node: NaryTreeNode<T> | null
+    node: Nullable<NaryTreeNode<T>>
   ): Generator<NaryTreeNode<T>, void, unknown> {
     if (node) {
       if (node.data.children.length === 1) {
@@ -277,7 +282,7 @@ export class NaryTree<T> {
   }
 
   *postOrderIterator(
-    node: NaryTreeNode<T> | null
+    node: Nullable<NaryTreeNode<T>>
   ): Generator<NaryTreeNode<T>, void, unknown> {
     if (node) {
       for (const child of node.data.children) {
@@ -288,7 +293,7 @@ export class NaryTree<T> {
   }
 
   *levelOrderIterator(
-    node: NaryTreeNode<T> | null
+    node: Nullable<NaryTreeNode<T>>
   ): Generator<NaryTreeNode<T>, void, unknown> {
     if (!node) return;
 
@@ -305,7 +310,7 @@ export class NaryTree<T> {
   }
 
   // Serializare
-  serializeTree(node: NaryTreeNode<T> | null): string {
+  serializeTree(node: Nullable<NaryTreeNode<T>>): string {
     if (!node) return 'null';
 
     const children = node.data.children
@@ -316,7 +321,7 @@ export class NaryTree<T> {
   }
 
   // Deserializare
-  deserializeTree(serializedTree: string): NaryTreeNode<T> | null {
+  deserializeTree(serializedTree: string): Nullable<NaryTreeNode<T>> {
     const obj = JSON.parse(serializedTree);
 
     if (obj === null) return null;
@@ -328,7 +333,7 @@ export class NaryTree<T> {
     return newNode;
   }
 
-  insertBalanced(values: T[]): NaryTreeNode<T> | null {
+  insertBalanced(values: T[]): Nullable<NaryTreeNode<T>> {
     const sortedValues = [...values, ...this.getAllNodeValues(this.root)].sort(
       (a, b) => (a < b ? -1 : 1)
     );
@@ -342,7 +347,7 @@ export class NaryTree<T> {
     return newRoot;
   }
 
-  private getAllNodeValues(node: NaryTreeNode<T> | null): T[] {
+  getAllNodeValues(node: Nullable<NaryTreeNode<T>>): T[] {
     if (!node) return [];
 
     let values: T[] = [node.data.value];
@@ -353,12 +358,12 @@ export class NaryTree<T> {
     return values;
   }
 
-  private buildBalancedTree(
+  buildBalancedTree(
     sortedValues: T[],
     start: number,
     end: number,
-    parent: NaryTreeNode<T> | null
-  ): NaryTreeNode<T> | null {
+    parent: Nullable<NaryTreeNode<T>>
+  ): Nullable<NaryTreeNode<T>> {
     if (start > end) {
       return null;
     }
@@ -372,10 +377,25 @@ export class NaryTree<T> {
     return newNode;
   }
 
+  isBalanced(node: Nullable<NaryTreeNode<T>> = this.root): boolean {
+    if (!node) return true;
+
+    const childHeights = node.data.children.map((child) =>
+      this.calculateHeight(child)
+    );
+    const maxChildHeight = Math.max(...childHeights);
+    const minChildHeight = Math.min(...childHeights);
+
+    return (
+      maxChildHeight - minChildHeight <= 1 &&
+      node.data.children.every((child) => this.isBalanced(child))
+    );
+  }
+
   getNodesByLevel(): Record<number, Array<NaryTreeNode<T>>> {
     const nodesByLevel: Record<number, Array<NaryTreeNode<T>>> = {};
 
-    const traverse = (node: NaryTreeNode<T> | null, level: number): void => {
+    const traverse = (node: Nullable<NaryTreeNode<T>>, level: number): void => {
       if (!node) return;
 
       if (!nodesByLevel[level]) {
@@ -397,7 +417,7 @@ export class NaryTree<T> {
   getNodeValuesByLevel(): Record<number, Array<NodeData<T>['value']>> {
     const valuesByLevel: Record<number, Array<NodeData<T>['value']>> = {};
 
-    const traverse = (node: NaryTreeNode<T> | null, level: number): void => {
+    const traverse = (node: Nullable<NaryTreeNode<T>>, level: number): void => {
       if (!node) return;
 
       if (!valuesByLevel[level]) {
@@ -419,7 +439,7 @@ export class NaryTree<T> {
   getSerializedNodesByLevel(): Record<number, Array<string>> {
     const nodesByLevel: Record<number, Array<string>> = {};
 
-    const traverse = (node: NaryTreeNode<T> | null, level: number): void => {
+    const traverse = (node: Nullable<NaryTreeNode<T>>, level: number): void => {
       if (!node) return;
 
       if (!nodesByLevel[level]) {
@@ -441,8 +461,8 @@ export class NaryTree<T> {
 
   findNodeWithValue(
     value: T,
-    node: NaryTreeNode<T> | null = this.root
-  ): NaryTreeNode<T> | null {
+    node: Nullable<NaryTreeNode<T>> = this.root
+  ): Nullable<NaryTreeNode<T>> {
     if (!node) return null;
 
     if (node.data.value === value) {
@@ -462,7 +482,7 @@ export class NaryTree<T> {
   findNodesWithCondition(predicate: (value: T) => boolean): NaryTreeNode<T>[] {
     const matchingNodes: NaryTreeNode<T>[] = [];
 
-    const traverse = (node: NaryTreeNode<T> | null): void => {
+    const traverse = (node: Nullable<NaryTreeNode<T>>): void => {
       if (!node) return;
 
       if (predicate(node.data.value)) {
@@ -479,32 +499,17 @@ export class NaryTree<T> {
     return matchingNodes;
   }
 
-  isBalanced(node: NaryTreeNode<T> | null = this.root): boolean {
-    if (!node) return true;
-
-    const childHeights = node.data.children.map((child) =>
-      this.calculateHeight(child)
-    );
-    const maxChildHeight = Math.max(...childHeights);
-    const minChildHeight = Math.min(...childHeights);
-
-    return (
-      maxChildHeight - minChildHeight <= 1 &&
-      node.data.children.every((child) => this.isBalanced(child))
-    );
-  }
-
   clearTree(): void {
     this.root = null;
   }
 
   findPathToNode(
     node: NaryTreeNode<T>,
-    startNode: NaryTreeNode<T> | null = this.root
+    startNode: Nullable<NaryTreeNode<T>> = this.root
   ): NaryTreeNode<T>[] {
     const path: NaryTreeNode<T>[] = [];
 
-    let current: NaryTreeNode<T> | null = node;
+    let current: Nullable<NaryTreeNode<T>> = node;
     while (current != startNode) {
       if (current) {
         path.unshift(current);
@@ -520,11 +525,11 @@ export class NaryTree<T> {
   findCommonAncestor(
     node1: NaryTreeNode<T>,
     node2: NaryTreeNode<T>
-  ): NaryTreeNode<T> | null {
+  ): Nullable<NaryTreeNode<T>> {
     const path1 = this.findPathToNode(node1);
     const path2 = this.findPathToNode(node2);
 
-    let commonAncestor: NaryTreeNode<T> | null = null;
+    let commonAncestor: Nullable<NaryTreeNode<T>> = null;
     for (let i = 0; i < Math.min(path1.length, path2.length); i++) {
       if (path1[i] === path2[i]) {
         commonAncestor = this.findNodeWithValue(path1[i].data.value);
@@ -536,7 +541,9 @@ export class NaryTree<T> {
     return commonAncestor;
   }
 
-  findLowestCommonAncestor(nodes: NaryTreeNode<T>[]): NaryTreeNode<T> | null {
+  findLowestCommonAncestor(
+    nodes: NaryTreeNode<T>[]
+  ): Nullable<NaryTreeNode<T>> {
     if (nodes.length === 0) return null;
 
     let commonAncestor = nodes[0];
@@ -548,33 +555,6 @@ export class NaryTree<T> {
     return commonAncestor;
   }
 
-  createMirrorTree(): NaryTree<T> {
-    const mirrorTree = new NaryTree<T>();
-    const mirrorRoot = this.createMirrorNode(this.root, mirrorTree);
-    mirrorTree.root = mirrorRoot;
-
-    return mirrorTree;
-  }
-
-  private createMirrorNode(
-    originalNode: NaryTreeNode<T> | null,
-    mirrorTree: NaryTree<T>,
-    mirrorParent: NaryTreeNode<T> | null = null
-  ): NaryTreeNode<T> | null {
-    if (!originalNode) return null;
-
-    const mirrorNode = mirrorTree.insertNode(
-      mirrorParent,
-      originalNode.data.value
-    );
-
-    for (const child of originalNode.data.children.reverse()) {
-      this.createMirrorNode(child, mirrorTree, mirrorNode);
-    }
-
-    return mirrorNode;
-  }
-
   isIdentical(otherTree: NaryTree<T>): boolean {
     return (
       this.serializeTree(this.root) === otherTree.serializeTree(otherTree.root)
@@ -583,11 +563,11 @@ export class NaryTree<T> {
 
   isSubtree(
     subtreeRoot: NaryTreeNode<T>,
-    rootNode: NaryTreeNode<T> | null = this.root
+    rootNode: Nullable<NaryTreeNode<T>> = this.root
   ): boolean {
     if (!rootNode) return false;
 
-    if (this.areNodesIdentical(rootNode, subtreeRoot)) {
+    if (this.areNodesIdenticalByReference(rootNode, subtreeRoot)) {
       return true;
     }
 
@@ -596,9 +576,16 @@ export class NaryTree<T> {
     );
   }
 
-  private areNodesIdentical(
-    node1: NaryTreeNode<T> | null,
-    node2: NaryTreeNode<T> | null
+  areNodesIdenticalByReference(
+    node1: Nullable<NaryTreeNode<T>>,
+    node2: Nullable<NaryTreeNode<T>>
+  ): boolean {
+    return node1 === node2;
+  }
+
+  areNodesIdenticalByValue(
+    node1: Nullable<NaryTreeNode<T>>,
+    node2: Nullable<NaryTreeNode<T>>
   ): boolean {
     if (!node1 && !node2) return true;
     if (!node1 || !node2) return false;
@@ -607,12 +594,14 @@ export class NaryTree<T> {
       node1.data.value === node2.data.value &&
       node1.data.children.length === node2.data.children.length &&
       node1.data.children.every((child, index) =>
-        this.areNodesIdentical(child, node2.data.children[index])
+        this.areNodesIdenticalByValue(child, node2.data.children[index])
       )
     );
   }
 
-  findLeafNodes(node: NaryTreeNode<T> | null = this.root): NaryTreeNode<T>[] {
+  findLeafNodes(
+    node: Nullable<NaryTreeNode<T>> = this.root
+  ): NaryTreeNode<T>[] {
     if (!node) return [];
 
     if (node.data.children.length === 0) {
@@ -631,7 +620,7 @@ export class NaryTree<T> {
   countNodesAtEachLevel(): Record<number, number> {
     const counts: Record<number, number> = {};
 
-    const traverse = (node: NaryTreeNode<T> | null, level: number): void => {
+    const traverse = (node: Nullable<NaryTreeNode<T>>, level: number): void => {
       if (!node) return;
 
       if (!counts[level]) {
@@ -686,16 +675,23 @@ export class NaryTree<T> {
     }
   }
 
-  insertNodes(parent: NaryTreeNode<T> | null, values: T[]): NaryTreeNode<T>[] {
+  insertNodes(
+    parent: Nullable<NaryTreeNode<T>>,
+    values: T[]
+  ): Nullable<NaryTreeNode<T>>[] {
+    if (!parent)
+      throw new Error(
+        'Inserting multiple values cannot happen with a null parent'
+      );
     return values.map((value) => this.insertNode(parent, value));
   }
 
   findShortestPath(
-    startNode: NaryTreeNode<T>,
-    endNode: NaryTreeNode<T>
+    startNode: Nullable<NaryTreeNode<T>>,
+    endNode: Nullable<NaryTreeNode<T>>
   ): NaryTreeNode<T>[] | null {
-    // const startPath = this.findPathToNode(startNode);
-    // const endPath = this.findPathToNode(endNode);
+    if (!startNode) throw new Error('Missing start node!');
+    if (!endNode) throw new Error('Missing end node!');
 
     const commonAncestor = this.findCommonAncestor(startNode, endNode);
     if (!commonAncestor) return null;
@@ -709,138 +705,119 @@ export class NaryTree<T> {
       commonAncestor
     );
 
-    return [...commonAncestorToStartNode.reverse(), ...commonAncestorToEndNode];
+    return [
+      ...commonAncestorToStartNode.reverse(),
+      ...commonAncestorToEndNode.slice(1)
+    ];
   }
 }
 
-// const tree = new NaryTree<number>();
+const tree = new NaryTree<number>();
 
-// let rootNode: NaryTreeNode<number> | null = tree.insertNode(null, 10);
-// const child1 = tree.insertNode(rootNode, 20);
-// const child2 = tree.insertNode(rootNode, 30);
-// const grandchild = tree.insertNode(child1, 40);
-// const grandgrandchild = tree.insertNode(grandchild, 50);
+let rootNode: NaryTreeNode<number> | null = tree.insertNode(null, 10);
+const child1 = tree.insertNode(rootNode, 20);
+const child2 = tree.insertNode(rootNode, 30);
+const grandchild = tree.insertNode(child1, 40);
+const grandgrandchild = tree.insertNode(grandchild, 50);
 
-// const sortedValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-// rootNode = tree.insertBalanced(sortedValues);
+const sortedValues = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+rootNode = tree.insertBalanced(sortedValues);
 
-// const nodeWithTargetValue = tree.findNodeWithValue(5, rootNode);
+const nodeWithTargetValue = tree.findNodeWithValue(5, rootNode);
 
-// if (nodeWithTargetValue) {
-//   const pathToNode = tree.findPathToNode(nodeWithTargetValue);
-//   console.log({ pathToNode });
-// }
-// console.log({ nodeWithTargetValue });
-// console.log('Height:', tree.calculateHeight(rootNode));
-// console.log('Depth of node 5:', tree.calculateDepth(nodeWithTargetValue));
-// console.log('Size of the tree:', tree.calculateSize(rootNode));
+if (nodeWithTargetValue) {
+  const pathToNode = tree.findPathToNode(nodeWithTargetValue);
+  console.log({ pathToNode });
+}
+console.log({ nodeWithTargetValue });
+console.log('Height:', tree.calculateHeight(rootNode));
+console.log('Depth of node 5:', tree.calculateDepth(nodeWithTargetValue));
+console.log('Size of the tree:', tree.calculateSize(rootNode));
 
-// // Delete a node
-// // tree.deleteNode(child1);
+console.log('Pre-order iterator: ');
+// Iterate using pre-order iterator
+const preOrderIterator = tree.preOrderIterator(rootNode);
+for (const node of preOrderIterator) {
+  console.log(node.data.value);
+}
 
-// console.log('Pre-order iterator: ');
-// // Iterate using pre-order iterator
-// const preOrderIterator = tree.preOrderIterator(rootNode);
-// for (const node of preOrderIterator) {
-//   console.log(node.data.value);
-// }
+// In-order iterator
+const inOrderIterator = tree.inOrderIterator(rootNode);
+console.log('In-order iterator Traversal:');
+for (const node of inOrderIterator) {
+  console.log(node.data.value);
+}
 
-// // In-order iterator
-// const inOrderIterator = tree.inOrderIterator(rootNode);
-// console.log('In-order iterator Traversal:');
-// for (const node of inOrderIterator) {
-//   console.log(node.data.value);
-// }
+// Post-order iterator
+const postOrderIterator = tree.postOrderIterator(rootNode);
+console.log('Post-order iterator Traversal:');
+for (const node of postOrderIterator) {
+  console.log(node.data.value);
+}
 
-// // Post-order iterator
-// const postOrderIterator = tree.postOrderIterator(rootNode);
-// console.log('Post-order iterator Traversal:');
-// for (const node of postOrderIterator) {
-//   console.log(node.data.value);
-// }
+// Level-order iterator
+const levelOrderIterator = tree.levelOrderIterator(rootNode);
+console.log('Level-order iterator Traversal:');
+for (const node of levelOrderIterator) {
+  console.log(node.data.value);
+}
 
-// // Level-order iterator
-// const levelOrderIterator = tree.levelOrderIterator(rootNode);
-// console.log('Level-order iterator Traversal:');
-// for (const node of levelOrderIterator) {
-//   console.log(node.data.value);
-// }
+console.log('Pre order');
+tree.preOrderTraversal(rootNode, (node) => {
+  console.log(node.data.value);
+});
 
-// console.log('Pre order');
-// tree.preOrderTraversal(rootNode, (node) => {
-//   console.log(node.data.value);
-// });
+console.log('In order');
+tree.inOrderTraversal(rootNode, (node) => {
+  console.log(node.data.value);
+});
 
-// console.log('In order');
-// tree.inOrderTraversal(rootNode, (node) => {
-//   console.log(node.data.value);
-// });
+console.log('Post order');
+// Post-order traversal
+tree.postOrderTraversal(rootNode, (node) => {
+  console.log(node.data.value);
+});
 
-// console.log('Post order');
-// // Post-order traversal
-// tree.postOrderTraversal(rootNode, (node) => {
-//   console.log(node.data.value);
-// });
+console.log('Level order');
+// Post-order traversal
+tree.levelOrderTraversal((node) => {
+  console.log(node.data.value);
+});
 
-// console.log('Level order');
-// // Post-order traversal
-// tree.levelOrderTraversal((node) => {
-//   console.log(node.data.value);
-// });
+// Serialize and Deserialize
+const serializedTree = tree.serializeTree(rootNode);
+console.log('Serialized Tree:', serializedTree);
 
-// // Serialize and Deserialize
-// const serializedTree = tree.serializeTree(rootNode);
-// console.log('Serialized Tree:', serializedTree);
+const deserializedTree = tree.deserializeTree(serializedTree);
+console.log('Deserialized Tree:', deserializedTree);
 
-// const deserializedTree = tree.deserializeTree(serializedTree);
-// console.log('Deserialized Tree:', deserializedTree);
+const nodesWithCondition = tree.findNodesWithCondition((value) => value > 4);
+console.log({
+  nodesWithCondition: nodesWithCondition.map((n) => n.data.value)
+});
 
-// const nodesWithCondition = tree.findNodesWithCondition((value) => value > 4);
-// console.log({
-//   nodesWithCondition: nodesWithCondition.map((n) => n.data.value)
-// });
+console.log(tree.getNodeValuesByLevel());
 
-// console.log(tree.getNodeValuesByLevel());
+console.log('Size: ', tree.calculateSize());
 
-//   console.log('Size: ', tree.calculateSize());
+const node1 = tree.findNodeWithValue(8);
+const node2 = tree.findNodeWithValue(50);
+const node20 = tree.findNodeWithValue(20);
 
-// const node1 = tree.findNodeWithValue(8);
-// const node2 = tree.findNodeWithValue(50);
-// const node20 = tree.findNodeWithValue(20);
+if (node1 && node2) {
+  const commonAncestor = tree.findCommonAncestor(node1, node2);
+  console.log({ commonAncestor });
 
-// if (node1 && node2) {
-//   const commonAncestor = tree.findCommonAncestor(node1, node2);
-//   console.log({ commonAncestor });
+  const path = tree.findPathToNode(node2);
+  console.log({ path: path.map((n) => n.data.value) });
 
-//   const path = tree.findPathToNode(node2);
-//   console.log({ path: path.map((n) => n.data.value) });
+  const path20to50 = tree.findPathToNode(node2, node20);
+  console.log({ path20to50: path20to50.map((n) => n.data.value) });
 
-//   const path20to50 = tree.findPathToNode(node2, node20);
-//   console.log({ path20to50: path20to50.map((n) => n.data.value) });
+  const shortestPath = tree.findShortestPath(node1, node2);
+  if (shortestPath)
+    console.log({ shortestPath: shortestPath.map((n) => n.data.value) });
+}
 
-//   const shortestPath = tree.findShortestPath(node1, node2);
-//   if (shortestPath)
-//     console.log({ shortestPath: shortestPath.map((n) => n.data.value) });
-// }
-
-// console.log('Size: ', tree.calculateSize());
-// console.log(tree.getNodeValuesByLevel());
-
-// let testableTree = new NaryTree<number>();
-
-// const rootNode = testableTree.insertNode(null, 1);
-// const child1 = testableTree.insertNode(rootNode, 2);
-// const child2 = testableTree.insertNode(rootNode, 3);
-// const grandchild1 = testableTree.insertNode(child1, 4);
-// const grandchild2 = testableTree.insertNode(child1, 5);
-// const grandchild3 = testableTree.insertNode(child2, 6);
-// const greatgrandchild1 = testableTree.insertNode(grandchild3, 7);
-// const greatgrandchild2 = testableTree.insertNode(grandchild3, 8);
-
-// const visitedNodes: number[] = [];
-// testableTree.inOrderTraversal(testableTree.root, (node) => {
-//   console.log('Pushing: ', node.data.value);
-//   visitedNodes.push(node.data.value);
-// });
-
-// console.log({ visitedNodes });
+console.log('Size: ', tree.calculateSize());
+console.log(tree.getNodeValuesByLevel());

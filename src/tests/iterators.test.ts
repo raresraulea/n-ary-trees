@@ -1,6 +1,6 @@
 import { NaryTree, NaryTreeNode } from '../index';
 
-describe('NaryTree', () => {
+describe('NaryTree iterators', () => {
   let testableTree: NaryTree<number>;
   let rootNode: NaryTreeNode<number>;
 
